@@ -1,0 +1,37 @@
+
+#создание таблицы пользователей, ролей, и таблицы прослойки для работы связи @ManyToMany
+
+create table security_schema.users (
+	id bigint not null auto_increment,
+    first_name varchar(128) not null unique,
+    second_name varchar(128) not null,
+    age int not null,
+    email varchar(128) not null,
+    u_password varchar(512) not null,
+    primary key (id)
+);
+
+
+create table security_schema.roles (
+	id bigint not null auto_increment,
+    role_name varchar(128) not null,
+    primary key (id)
+);
+
+create table security_schema.users_roles (
+	user_id bigint references users(id),
+    role_id bigint references roles(id),
+    primary key (user_id, role_id)
+);
+
+
+#Заполнение пользователем admin
+
+insert into security_schema.users (first_name, second_name, age, email, u_password) // пароль - "123" переведённый в Bcrypt.
+values ("admin", "admin". 35, "admin@mail.com", "$2a$12$vCO2b/CySEAZtDxTUwEzhOfyikEg1v6O259kj5A4PFYMupmygzU6e");
+
+insert into security_schema.roles (role_name)
+values (ROLE_ADMIN);
+
+insert into security_schema.users_roles 
+values (1,1);
