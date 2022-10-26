@@ -2,81 +2,69 @@ package com.SpringSecurity.security.sources.conftroller;
 
 import com.SpringSecurity.security.sources.dto.UserDTO.UserDTO;
 import com.SpringSecurity.security.sources.dto.UserDTO.UserDTOWithID;
-import com.SpringSecurity.security.sources.model.Role;
 import com.SpringSecurity.security.sources.model.User;
-import com.SpringSecurity.security.sources.service.RoleService;
 import com.SpringSecurity.security.sources.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /** Использую data transfer objects, специальные классы прослойки для работы с формированием json,
  * так как в POST и PUT запросах не нужно со строны клиента указывать id у User и id у Role */
 
-@Controller
+@RestController
 @RequestMapping("/")
 public class UserController {
 
     private final UserService userService;
-    private final RoleService roleService;
 
     private final ModelMapper modelMapper;
-
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public UserController(UserService userService, RoleService roleService, ModelMapper modelMapper) {
+    public UserController(UserService userService, ModelMapper modelMapper, ObjectMapper objectMapper) {
         this.userService = userService;
-        this.roleService = roleService;
         this.modelMapper = modelMapper;
+        this.objectMapper = objectMapper;
     }
 
-
-
     @GetMapping
-    public String printStartPage(Principal principal, Model model) {
-        User user = userService.getUserByName(principal.getName());
-        for (Role role : user.getRoles()) {
-            if (role.getName().contains("ADMIN")) {
-               return  "redirect:admin";
-            }
-        }
-        return "redirect:user";
+    public RedirectView redirectView() {
+        return new RedirectView("/login");
     }
 
     @GetMapping("admin")
-    public String adminPage(Principal principal, Model model) {
+    public ModelAndView adminPage(Principal principal) throws JsonProcessingException {
         User admin = userService.getUserByName(principal.getName());
-        model.addAttribute("admin", admin);
-        return "admin";
+        return new ModelAndView("admin","admin",
+                                objectMapper.writeValueAsString(modelMapper.map(admin,UserDTOWithID.class)));
     }
 
     @GetMapping("user")
-    public String userPage(Principal principal, Model model) {
+    public ModelAndView userPage(Principal principal) throws JsonProcessingException {
         User user = userService.getUserByName(principal.getName());
-        model.addAttribute("user", user);
-        return "user";
+        return new ModelAndView("user","user",
+                                objectMapper.writeValueAsString(modelMapper.map(user,UserDTOWithID.class)));
     }
 
     @GetMapping("admin/api/user/{name}")
-    @ResponseBody
     public UserDTOWithID getUserByName(@PathVariable("name") String name) {
         return modelMapper.map(userService.getUserByName(name),UserDTOWithID.class);
     }
 
     @GetMapping("admin/api/users")
-    @ResponseBody
     public List<UserDTOWithID> getAllUsers() {
         List<UserDTOWithID> usersDTOWithId = new ArrayList<>();
         userService.getAllUsers().stream().forEach(user-> usersDTOWithId.add(modelMapper.map(user,UserDTOWithID.class)));
@@ -84,7 +72,6 @@ public class UserController {
     }
 
     @GetMapping("admin/api/users/{id}")
-    @ResponseBody
     public UserDTOWithID getUserById(@PathVariable("id") Long id) {
         return modelMapper.map(userService.getUser(id),UserDTOWithID.class);
     }
@@ -95,25 +82,22 @@ public class UserController {
      * а записывает в ключ только строку с последним выделенным знвчением,
      * было принято решение парсить строку на серверной стороне*/
     @PostMapping(value = "admin/api/users", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     public ResponseEntity<HttpStatus> createUser(@RequestBody @Valid UserDTO userDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // TODO
         }
-        User user = createUserFromUserTDO(userDTO);
-        userService.addUser(user);
+        userService.addUser(userDTO.Convert(userDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
 
     @PutMapping (value = "admin/api/users", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     public ResponseEntity<HttpStatus> updateUser(@RequestBody @Valid UserDTOWithID userDTOWithID, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             //TODO
         }
-        User user = createUserFromUserTDO(userDTOWithID);
-        userService.updateUser(user);
+
+        userService.updateUser(userDTOWithID.Convert(userDTOWithID));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -121,28 +105,6 @@ public class UserController {
     public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") Long id ) {
         userService.deleteUserById(id);
         return  ResponseEntity.ok(HttpStatus.OK);
-    }
-
-
-
-    /**Утилитная функция парсинга userDTO c строковым полем getRolesStr в обьект User с List<Role> */
-    private User createUserFromUserTDO(UserDTO userDTO) {
-        User user = new User();
-
-        if (userDTO instanceof UserDTOWithID) {
-            user.setId(((UserDTOWithID) userDTO).getId());
-        }
-        user.setName(userDTO.getName());
-        user.setSurname(userDTO.getSurname());
-        user.setAge(userDTO.getAge());
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(userDTO.getPassword());
-
-        String str = userDTO.getRolesStr();
-        List<Role> rolesList = new ArrayList<>();
-        Arrays.stream(str.split(" ")).toList().stream().forEach(element -> rolesList.add(new Role(element)));
-        user.setRoles(rolesList);
-        return user;
     }
 
 }

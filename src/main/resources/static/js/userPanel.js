@@ -1,36 +1,35 @@
+/** Функция заполнения полей данными пользователя и генераци таблицы пользователей
+ * Благодаря передаче Json строки вместе с View от сервера, можно распарсить и заполнить все необходимые
+ * поля и сгенерировать табилцу User-ов*/
+function fillingUserChapter(idOfUserNameContainer,idOfRolesContainer,tableBodyElem ) {
 
-function fillingUserChapter(idOfElement, tableBodyElem) {
+    let user = JSON.parse(document.getElementById("user").value);
+    let rolesStr = getNamesFromBigData(user);
 
-    let userNameFromNode = document.getElementById(idOfElement).innerText;
-    console.log(userNameFromNode);
-    fetch("http://localhost:8080/admin/api/user/" + userNameFromNode)
-        .then( (response) => {
-            return response.json();
-        })
-        .then( (data) => {
-            console.log(data);
-            let userTableData = "";
-            let res = "";
-            console.log(data.roles.forEach( element => { element.name += " ";}));
-            userTableData += '<tr>' + '<td><span>' + data.id + '</span></td>'
-                + '<td><span>' + data.name + '</span></td>'
-                + '<td><span>' + data.surname + '</span></td>'
-                + '<td><span>' + data.age + '</span></td>'
-                + '<td><span>' + data.email + '</span></td>'
-                + '<td><span>' + getNamesFromBigData(data) + '</span></td>'
-                + '</tr>';
+    let userTableData = "";
+        userTableData +=
+        '<tr>'
+        + '<td><span>' + user.id + '</span></td>'
+        + '<td><span>' + user.name+ '</span></td>'
+        + '<td><span>' + user.surname + '</span></td>'
+        + '<td><span>' + user.age + '</span></td>'
+        + '<td><span>' + user.email + '</span></td>'
+        + '<td><span>' + rolesStr + '</span></td>'
+        + '</tr>';
 
-            document.getElementById(tableBodyElem).innerHTML=userTableData;
-        });
+    document.getElementById(idOfUserNameContainer).textContent = user.name;
+    document.getElementById(idOfRolesContainer).textContent = rolesStr;
+    document.getElementById(tableBodyElem).innerHTML = userTableData;
+
 }
 
 function getNamesFromBigData(data) {
     let res = "";
     data.roles.forEach(element => {res += " " + element.name;});
-    console.log(res);
     return res;
 }
 
 
 
-fillingUserChapter("userName", "userTableData");
+
+fillingUserChapter("userName","userRoles", "userTableData");

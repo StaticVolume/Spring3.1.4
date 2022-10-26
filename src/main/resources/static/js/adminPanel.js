@@ -12,28 +12,29 @@ function getCookies() {
 }
 
 
-/**Получаем из единственого блока в котором используется thymeleaf имя пользователя для последующего его получения
- *  пользователя из запроса и формирование таблицы описания User-а */
-function fillingUserChapter(idOfElement, tableBodyElem) {
+/** Функция заполнения полей данными пользователя и генераци таблицы пользователя
+ * Благодаря передаче Json строки вместе с View от сервера, можно распарсить и заполнить все необходимые
+ * поля и сгенерировать табилцу User-ов*/
+function fillingUserChapter(idOfUserNameContainer,idOfRolesContainer,tableBodyElem ) {
 
-    let userNameFromNode = document.getElementById(idOfElement).innerText;
-    fetch("http://localhost:8080/admin/api/user/" + userNameFromNode)
-        .then( (response) => {
-            return response.json();
-        })
-        .then( (data) => {
-            console.log(data);
-            let userTableData = "";
-            let res = "";
-            userTableData += '<tr>' + '<td><span>' + data.id + '</span></td>'
-                + '<td><span>' + data.name + '</span></td>'
-                + '<td><span>' + data.surname + '</span></td>'
-                + '<td><span>' + data.age + '</span></td>'
-                + '<td><span>' + data.email + '</span></td>'
-                + '<td><span>' + getNamesFromBigData(data) + '</span></td>'
-                + '</tr>';
-            document.getElementById(tableBodyElem).innerHTML=userTableData;
-        });
+    let admin = JSON.parse(document.getElementById("admin").value);
+    let rolesStr = getNamesFromBigData(admin);
+
+    let userTableData = "";
+    userTableData +=
+        '<tr>'
+        + '<td><span>' + admin.id + '</span></td>'
+        + '<td><span>' + admin.name+ '</span></td>'
+        + '<td><span>' + admin.surname + '</span></td>'
+        + '<td><span>' + admin.age + '</span></td>'
+        + '<td><span>' + admin.email + '</span></td>'
+        + '<td><span>' + rolesStr + '</span></td>'
+        + '</tr>';
+
+    document.getElementById(idOfUserNameContainer).textContent = admin.name;
+    document.getElementById(idOfRolesContainer).textContent = rolesStr;
+    document.getElementById(tableBodyElem).innerHTML = userTableData;
+
 }
 
 
@@ -233,7 +234,7 @@ function sendCreateForm(formId, submitInputId, selectId) {
 
 /**Вызываем функции заполнения таблиц описания User-а и таблиц списка пользователей */
 fillingUsersTable("tableData");
-fillingUserChapter("adminName", "userTableData");
+fillingUserChapter("adminName","adminRoles", "userTableData");
 updatedAndFillingUserTable();
 
 /**Вызываем функции отправки заполненной формы создания нового пользователя*/

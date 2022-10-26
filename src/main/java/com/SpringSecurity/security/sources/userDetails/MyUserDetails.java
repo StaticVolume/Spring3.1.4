@@ -26,6 +26,9 @@ public class MyUserDetails implements UserDetails {
         return grantedAuthorities;
     }
 
+    public boolean hasRole(String strRole) {
+       return this.user.getRoles().stream().anyMatch(role -> role.getName().contains(strRole));
+    }
     @Override
     public String getPassword() {
         return this.user.getPassword();

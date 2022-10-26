@@ -1,11 +1,17 @@
 package com.SpringSecurity.security.sources.dto.UserDTO;
 
+import com.SpringSecurity.security.sources.converterToEntity.ConverterFromTo;
 import com.SpringSecurity.security.sources.dto.RoleDTO.RoleDTO;
+import com.SpringSecurity.security.sources.model.Role;
+import com.SpringSecurity.security.sources.model.User;
 import jakarta.validation.constraints.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class UserDTO {
+/** Имплементируем интерфейс конвертера и реализуем его метод для упрощенного конвентирования одного обьекта в другой*/
+public class UserDTO implements ConverterFromTo<UserDTO, User> {
 
     @NotEmpty(message = "name must be not null")
     @Size(min = 2, max = 128, message = "name must be greater 2 characters and less 128 characters")
@@ -91,4 +97,27 @@ public class UserDTO {
     public void setRolesStr(String rolesStr) {
         this.rolesStr = rolesStr;
     }
+
+
+    /**Утилитная функция парсинга userDTO c строковым полем getRolesStr в обьект User с List<Role> */
+    @Override
+    public User Convert(UserDTO userDTO) {
+        User user = new User();
+
+        if (userDTO instanceof UserDTOWithID) {
+            user.setId(((UserDTOWithID) userDTO).getId());
+        }
+        user.setName(userDTO.getName());
+        user.setSurname(userDTO.getSurname());
+        user.setAge(userDTO.getAge());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+
+        String str = userDTO.getRolesStr();
+        List<Role> rolesList = new ArrayList<>();
+        Arrays.stream(str.split(" ")).toList().stream().forEach(element -> rolesList.add(new Role(element)));
+        user.setRoles(rolesList);
+        return user;
+    }
 }
+
