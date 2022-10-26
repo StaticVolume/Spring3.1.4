@@ -1,5 +1,6 @@
 package com.SpringSecurity.security.sources.conftroller;
 
+import com.SpringSecurity.security.sources.converterToEntity.ConverterFromTo;
 import com.SpringSecurity.security.sources.dto.UserDTO.UserDTO;
 import com.SpringSecurity.security.sources.dto.UserDTO.UserDTOWithID;
 import com.SpringSecurity.security.sources.model.User;
@@ -27,6 +28,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/")
 public class UserController {
+    /**Собственный конвертер для конвентирования UseDTO в User в тех случаях,
+     * когда стандартный конвертер не могёт*/
+    private final ConverterFromTo<UserDTO,User> converterFromUserDtoToUser;
 
     private final UserService userService;
     /**ModelMapper нужно для конвентипрования(конкретнее маппинга обекта DTO в User и обратно)*/
@@ -35,7 +39,8 @@ public class UserController {
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public UserController(UserService userService, ModelMapper modelMapper, ObjectMapper objectMapper) {
+    public UserController(ConverterFromTo converterFromUserDtoToUser, UserService userService, ModelMapper modelMapper, ObjectMapper objectMapper) {
+        this.converterFromUserDtoToUser = converterFromUserDtoToUser;
         this.userService = userService;
         this.modelMapper = modelMapper;
         this.objectMapper = objectMapper;
@@ -86,9 +91,9 @@ public class UserController {
     @PostMapping(value = "admin/api/users", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HttpStatus> createUser(@RequestBody @Valid UserDTO userDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            // TODO
+            throw  new RuntimeException("invalid data");
         }
-        userService.addUser(userDTO.Convert(userDTO));
+        userService.addUser(converterFromUserDtoToUser.Convert(userDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -96,10 +101,10 @@ public class UserController {
     @PutMapping (value = "admin/api/users", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HttpStatus> updateUser(@RequestBody @Valid UserDTOWithID userDTOWithID, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            //TODO
+            throw  new RuntimeException("invalid data");
         }
 
-        userService.updateUser(userDTOWithID.Convert(userDTOWithID));
+        userService.updateUser(converterFromUserDtoToUser.Convert(userDTOWithID));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
