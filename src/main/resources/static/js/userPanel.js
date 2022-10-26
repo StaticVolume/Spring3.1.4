@@ -23,12 +23,12 @@ function fillingUserChapter(idOfUserNameContainer,idOfRolesContainer,tableBodyEl
 
 }
 
+/**Эта функция переводит массив в троку для корректного отображения в ROLE_* в таблице User-ов */
 function getNamesFromBigData(data) {
     let res = "";
-    data.roles.forEach(element => {res += " " + element.name;});
-    return res;
+    data.roles.forEach(element => {res += element.name.split("_")[1] + ", ";});
+    return res.slice(0,-2);
 }
-
 
 
 

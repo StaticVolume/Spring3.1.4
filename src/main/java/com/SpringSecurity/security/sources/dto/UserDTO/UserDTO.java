@@ -5,7 +5,6 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
-/** Имплементируем интерфейс конвертера и реализуем его метод для упрощенного конвентирования одного обьекта в другой*/
 public class UserDTO {
 
     @NotEmpty(message = "name must be not null")
