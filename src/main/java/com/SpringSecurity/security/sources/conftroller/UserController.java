@@ -29,8 +29,9 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-
+    /**ModelMapper нужно для конвентипрования(конкретнее маппинга обекта DTO в User и обратно)*/
     private final ModelMapper modelMapper;
+    /**ObjectMapper - часть библиотеки Jackson, используется для преобразования обькта в строку JSON*/
     private final ObjectMapper objectMapper;
 
     @Autowired
@@ -40,6 +41,7 @@ public class UserController {
         this.objectMapper = objectMapper;
     }
 
+    /**Данный контроллер можно было и не писать, но бесит 404 ошибка при старте http://localhost::8080 */
     @GetMapping
     public RedirectView redirectView() {
         return new RedirectView("/login");
