@@ -1,6 +1,7 @@
 package com.SpringSecurity.security.sources.config;
 
 import com.SpringSecurity.security.sources.service.UserServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -59,6 +60,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public ModelMapper modelMapper(){
         return new ModelMapper();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
 }

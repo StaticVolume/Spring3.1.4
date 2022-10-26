@@ -14,6 +14,10 @@ import java.util.List;
 @Component
 /**Утилитная функция парсинга userDTO c строковым полем getRolesStr в обьект User с List<Role> */
 public class ConverterFromUserDtoToUser implements ConverterFromTo<UserDTO, User> {
+
+    public ConverterFromUserDtoToUser() {
+    }
+
     @Override
     public User Convert(UserDTO userDTO) {
         User user = new User();
